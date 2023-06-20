@@ -2,9 +2,10 @@ import classNames from 'classnames';
 import type { ComponentProps, FC, PropsWithChildren, ReactElement } from 'react';
 import { Children, cloneElement, useMemo, useState } from 'react';
 import { HiChevronDown } from 'react-icons/hi';
-import type { DeepPartial, FlowbiteBoolean } from '../../';
-import { useTheme } from '../../';
+import type { DeepPartial } from '..';
 import { mergeDeep } from '../../helpers/merge-deep';
+import type { FlowbiteBoolean } from '../Flowbite/FlowbiteTheme';
+import { useTheme } from '../Flowbite/ThemeContext';
 import type { FlowbiteAccordionComponentTheme } from './AccordionContent';
 import { AccordionContent } from './AccordionContent';
 import type { AccordionPanelProps } from './AccordionPanel';
@@ -42,20 +43,20 @@ const AccordionComponent: FC<AccordionProps> = ({
   theme: customTheme = {},
   ...props
 }) => {
-  const [isOpen, setOpen] = useState(collapseAll ? -1 : 0);
+  const [currentPanelExpanded, setCurrentPanelExpanded] = useState(collapseAll ? -1 : 0);
 
   const panels = useMemo(
     () =>
-      Children.map(children, (child, i) =>
+      Children.map(children, (child, currentPanelIndex) =>
         cloneElement(child, {
           alwaysOpen,
           arrowIcon,
           flush,
-          isOpen: isOpen === i,
-          setOpen: () => setOpen(isOpen === i ? -1 : i),
+          isOpen: collapseAll ? false : child.props.isOpen || currentPanelExpanded === currentPanelIndex,
+          setOpen: () => setCurrentPanelExpanded(currentPanelExpanded === currentPanelIndex ? -1 : currentPanelIndex),
         }),
       ),
-    [alwaysOpen, arrowIcon, children, flush, isOpen],
+    [children, alwaysOpen, arrowIcon, flush, collapseAll, currentPanelExpanded],
   );
 
   const theme = mergeDeep(useTheme().theme.accordion.root, customTheme);
